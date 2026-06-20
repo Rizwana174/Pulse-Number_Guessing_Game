@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pulse — Find the Number</title>
+<meta name="description" content="A hidden number is sending out a signal. Guess your way closer and watch the pulse race before it fades. Three difficulty levels, Time Attack, a daily challenge, live scoring, achievements, and a leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="mesh-bg" aria-hidden="true">
+  <span class="mesh-blob m1"></span>
+  <span class="mesh-blob m2"></span>
+  <span class="mesh-blob m3"></span>
+  <span class="mesh-blob m4"></span>
+  <span class="mesh-blob m5"></span>
+</div>
+
+<!-- Full-viewport flash + confetti/particle layer used by the victory celebration -->
+<div class="screen-flash" id="screenFlash" aria-hidden="true"></div>
+<div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+
+<!-- Last-chance + achievement toasts (top of screen, stack-friendly) -->
+<div class="toast" id="lastChanceToast" role="alert">
+  <span class="toast-icon">⚠️</span>
+  <span id="lastChanceText">Last chance — make it count!</span>
+</div>
+
+<div class="toast toast-achievement" id="achievementToast" role="status">
+  <span class="toast-icon" id="achievementToastIcon">🏆</span>
+  <span>
+    <strong class="toast-title">Achievement unlocked</strong>
+    <span class="toast-sub" id="achievementToastText">First Victory</span>
+  </span>
+</div>
+
+<div class="toast toast-info" id="infoToast" role="status">
+  <span class="toast-icon" id="infoToastIcon">✓</span>
+  <span id="infoToastText">Copied to clipboard</span>
+</div>
+
+<main class="app">
+
+  <header class="header">
+    <p class="eyebrow">A NUMBER GUESSING GAME</p>
+    <h1 class="title">PULSE</h1>
+    <p class="subtitle">A number is broadcasting nearby. Guess your way closer and watch the signal race before it fades.</p>
+  </header>
+
+  <!-- ============ Toolbar: voice/sound mode, stats, achievements, leaderboard ============ -->
+  <nav class="toolbar" aria-label="Game tools">
+    <button class="icon-btn" id="audioModeBtn" aria-pressed="false" title="Sound + Voice">
+      <svg id="soundOnIcon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 9v6h4l5 5V4L8 9H4z"/><path fill="currentColor" d="M16.5 12a4.5 4.5 0 0 0-2.3-3.9l-.7 1.2A3 3 0 0 1 15 12a3 3 0 0 1-1.5 2.6l.7 1.2a4.5 4.5 0 0 0 2.3-3.8z"/></svg>
+      <svg id="soundOffIcon" viewBox="0 0 24 24" width="18" height="18" hidden><path fill="currentColor" d="M4 9v6h4l5 5V4L8 9H4z"/><path fill="currentColor" d="M19.8 7.7l-1.1-1.1-2.3 2.3-2.3-2.3-1.1 1.1 2.3 2.3-2.3 2.3 1.1 1.1 2.3-2.3 2.3 2.3 1.1-1.1-2.3-2.3z"/></svg>
+      <span class="voice-dot" id="voiceDot" aria-hidden="true"></span>
+    </button>
+    <button class="icon-btn" id="statsBtn" title="Statistics (S)">
+      <span aria-hidden="true">📊</span>
+    </button>
+    <button class="icon-btn" id="achievementsBtn" title="Achievements">
+      <span aria-hidden="true">🎖️</span>
+    </button>
+    <button class="icon-btn" id="leaderboardBtn" title="Leaderboard (L)">
+      <span aria-hidden="true">🏆</span>
+    </button>
+  </nav>
+
+  <!-- ============ Daily Challenge banner ============ -->
+  <section class="daily-banner" id="dailyBanner" aria-label="Daily challenge">
+    <div class="daily-main">
+      <p class="daily-eyebrow">DAILY CHALLENGE · <span id="dailyDateText">—</span></p>
+      <p class="daily-headline" id="dailyHeadline">Can you find today's signal?</p>
+      <p class="daily-meta">Range 1–100 · 7 guesses · same number for every player, resets at midnight</p>
+    </div>
+    <div class="daily-action" id="dailyAction">
+      <button class="daily-play-btn" id="dailyPlayBtn">Play Today's Challenge</button>
+    </div>
+    <div class="daily-result" id="dailyResult" hidden>
+      <p class="daily-result-line" id="dailyResultLine">You scored <strong id="dailyResultScore">0</strong></p>
+      <p class="daily-countdown">Next signal in <strong id="dailyCountdown">--:--:--</strong></p>
+      <button class="daily-share-btn" id="dailyShareBtn">Share my result</button>
+    </div>
+  </section>
+
+  <!-- ============ Mode selector: Classic vs Time Attack ============ -->
+  <div class="mode-tabs" role="tablist" aria-label="Game mode">
+    <button class="mode-tab active" id="classicTabBtn" data-mode="classic" role="tab" aria-selected="true">Classic</button>
+    <button class="mode-tab" id="timeAttackTabBtn" data-mode="timeAttack" role="tab" aria-selected="false">⚡ Time Attack</button>
+  </div>
+
+  <section class="level-select" aria-label="Difficulty selection">
+    <button class="level-btn level-easy" data-level="easy">
+      <span class="level-name">Easy</span>
+      <span class="level-meta" data-classic="1–50 · 10 guesses" data-timeattack="1–50 · 60 sec">1–50 · 10 guesses</span>
+    </button>
+    <button class="level-btn level-medium" data-level="medium">
+      <span class="level-name">Medium</span>
+      <span class="level-meta" data-classic="1–100 · 7 guesses" data-timeattack="1–100 · 45 sec">1–100 · 7 guesses</span>
+    </button>
+    <button class="level-btn level-hard" data-level="hard">
+      <span class="level-name">Hard</span>
+      <span class="level-meta" data-classic="1–200 · 5 guesses" data-timeattack="1–200 · 30 sec">1–200 · 5 guesses</span>
+    </button>
+  </section>
+
+  <section class="game-card" id="gameCard">
+
+    <p class="mode-flag" id="modeFlag" hidden></p>
+
+    <div class="stat-row">
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value" id="scoreValue">0</span>
+      </div>
+      <span class="range-pill" id="rangeLine">1–100</span>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="bestValue">0</span>
+      </div>
+    </div>
+
+    <div class="pulse-wrap">
+      <div class="pulse-ring ring-3" id="ring3"></div>
+      <div class="pulse-ring ring-2" id="ring2"></div>
+      <div class="pulse-ring ring-1" id="ring1"></div>
+      <div class="pulse-core" id="pulseCore">
+        <span class="pulse-value" id="pulseValue">?</span>
+      </div>
+    </div>
+    <p class="pulse-readout" id="dialReadout">PICK A DIFFICULTY</p>
+
+    <div class="chances-badge" id="chancesBadge">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 80 80" class="chances-ring" aria-hidden="true">
+          <circle cx="40" cy="40" r="34" class="ring-bg"></circle>
+          <circle cx="40" cy="40" r="34" class="ring-fg" id="ringFg"></circle>
+        </svg>
+        <div class="chances-center">
+          <span class="chances-number" id="chancesNumber">10</span>
+        </div>
+      </div>
+      <span class="chances-label" id="chancesLabelText">guesses left</span>
+    </div>
+
+    <form class="guess-row" id="guessForm" autocomplete="off">
+      <input
+        type="number"
+        inputmode="numeric"
+        id="guessInput"
+        class="guess-input"
+        placeholder="Enter number"
+        aria-label="Your guess"
+        required
+      >
+      <button type="submit" class="guess-btn" id="tryBtn">Guess</button>
+    </form>
+
+    <p class="feedback" id="feedbackLine">Pick a difficulty level to begin.</p>
+
+    <div class="history" id="history" aria-label="Guess history"></div>
+
+  </section>
+
+  <section class="end-panel" id="endPanel" hidden>
+    <h2 id="endTitle">SIGNAL LOCKED</h2>
+    <p id="endSubtitle"></p>
+    <p class="end-score-line">Score earned: <strong id="endScore">0</strong></p>
+
+    <div class="save-score-row" id="saveScoreRow" hidden>
+      <input type="text" id="nicknameInput" class="nickname-input" placeholder="Your name" maxlength="16" aria-label="Your name for the leaderboard">
+      <button class="save-score-btn" id="saveScoreBtn">Save to leaderboard</button>
+    </div>
+    <p class="save-score-confirm" id="saveScoreConfirm" hidden>✓ Saved — rank <strong id="saveScoreRank">—</strong> on the board</p>
+
+    <div class="end-actions">
+      <button class="again-btn" id="playAgainBtn">Try Again</button>
+      <button class="share-btn" id="shareScoreBtn">Share Score</button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span class="footer-text">Scores are stored on this device only.</span>
+    <button class="icon-btn text-btn" id="resetScoresBtn" title="Clear best scores">Reset bests</button>
+  </footer>
+
+  <p class="kbd-hint">Shortcuts: <kbd>Enter</kbd> guess · <kbd>R</kbd> restart · <kbd>M</kbd> sound · <kbd>L</kbd> leaderboard · <kbd>S</kbd> stats</p>
+
+</main>
+
+<!-- ============ Statistics modal ============ -->
+<div class="modal-overlay" id="statsModal" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="statsModalTitle">
+    <div class="modal-head">
+      <h2 id="statsModalTitle">Statistics</h2>
+      <button class="modal-close" data-close-modal="statsModal" aria-label="Close">✕</button>
+    </div>
+    <div class="stats-grid" id="statsGrid"><!-- populated by script.js --></div>
+    <button class="modal-secondary-btn" id="resetStatsBtn">Reset statistics</button>
+  </div>
+</div>
+
+<!-- ============ Achievements modal ============ -->
+<div class="modal-overlay" id="achievementsModal" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="achievementsModalTitle">
+    <div class="modal-head">
+      <h2 id="achievementsModalTitle">Achievements</h2>
+      <button class="modal-close" data-close-modal="achievementsModal" aria-label="Close">✕</button>
+    </div>
+    <p class="achievements-progress" id="achievementsProgress">0 / 10 unlocked</p>
+    <div class="achievements-grid" id="achievementsGrid"><!-- populated by script.js --></div>
+  </div>
+</div>
+
+<!-- ============ Leaderboard modal ============ -->
+<div class="modal-overlay" id="leaderboardModal" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="leaderboardModalTitle">
+    <div class="modal-head">
+      <h2 id="leaderboardModalTitle">Leaderboard</h2>
+      <button class="modal-close" data-close-modal="leaderboardModal" aria-label="Close">✕</button>
+    </div>
+    <div class="leaderboard-tabs">
+      <button class="lb-tab active" data-lb-tab="alltime">All-Time Top 10</button>
+      <button class="lb-tab" data-lb-tab="today">Today's Signal</button>
+    </div>
+    <ol class="leaderboard-list" id="leaderboardList"><!-- populated by script.js --></ol>
+    <p class="leaderboard-empty" id="leaderboardEmpty" hidden>No scores yet — go set one!</p>
+    <button class="modal-secondary-btn" id="clearLeaderboardBtn">Clear leaderboard</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
