@@ -3,8 +3,14 @@
 A modern, browser-based number guessing game. A hidden number is "broadcasting" nearby — guess your way closer and watch a colorful pulse beat faster as you close in, set against an animated, colorful gradient backdrop with frosted-glass panels.
 ## 🎮Live Demo:
 https://pulse-number-guessing-game.vercel.app/
-## 🎥 Demo Video
-<video controls src="assets/demo.mp4" title="Live Gameplay Demo"></video>
+## 🎥 Demo 
+![Screenshot](<assets/Screenshot (24).png>)
+![Screenshot](<assets/Screenshot (25).png>)
+![Screenshot](<assets/Screenshot (26).png>)
+![Screenshot](<assets/Screenshot (27).png>)
+![Screenshot](<assets/Screenshot 2026-06-20 142053.png>)
+
+
 ## Features
 
 **Core game**
