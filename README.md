@@ -4,7 +4,7 @@ A modern, browser-based number guessing game. A hidden number is "broadcasting" 
 ## 🎮Live Demo:
 https://pulse-number-guessing-game.vercel.app/
 ## 🎥 Demo Video
-<video controls src="assets/Demo.mp4" title="Live Gameplay Demo"></video>
+<video controls src="assets/demo.mp4" title="Live Gameplay Demo"></video>
 ## Features
 
 **Core game**
@@ -54,61 +54,11 @@ https://pulse-number-guessing-game.vercel.app/
 **Keyboard shortcuts**
 - `Enter` submit guess · `R` restart · `M` cycle sound/voice mode · `L` leaderboard · `S` statistics · `Esc` close any modal
 
-## Files
-
-```
-index.html   structure — toolbar, daily banner, mode tabs, modals, end panel
-style.css    visual design (glassmorphism theme) + all new component styles
-script.js    game logic: voice, sound, vibration, stats, achievements,
-             leaderboard, Time Attack, Daily Challenge, scoring, persistence
-```
-
-No build step, no dependencies, no backend — still three static files.
-
-## Run it locally
-
-Just open `index.html` in a browser, or serve the folder:
-
-```bash
-npx serve .
-```
-
-## Deploy to Vercel
-
-**Option 1 — Vercel CLI**
-
-```bash
-npm install -g vercel
-cd pulse
-vercel
-```
-
-Follow the prompts (link or create a project) and accept the defaults — Vercel auto-detects this as a static site.
-
-**Option 2 — Vercel dashboard**
-
-1. Push this folder to a GitHub repo.
-2. Go to [vercel.com/new](https://vercel.com/new) and import the repo.
-3. Leave the framework preset as "Other" / static — no build command is needed.
-4. Click Deploy.
-
-Either way you'll get a live `*.vercel.app` URL in under a minute.
 
 ## Notes on the scoring formula
 
 **Classic / Daily** — for a difficulty with `maxScore` and `attempts`:
 
-```
-score = round(maxScore * (attempts - attemptsUsed + 1) / attempts)
-```
-
-Guessing correctly on the first try earns the full `maxScore`; guessing on the last possible try still earns a small reward rather than zero.
-
-**Time Attack** — score is driven by time remaining instead of guesses used:
-
-```
-score = max(50, round(maxScore * (timeRemaining / timeTotal)))
-```
 
 ## Notes on a few interpretive choices
 
