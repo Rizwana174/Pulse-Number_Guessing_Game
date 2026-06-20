@@ -4,7 +4,7 @@ A modern, browser-based number guessing game. A hidden number is "broadcasting" 
 ## 🎮Live Demo:
 https://pulse-number-guessing-game.vercel.app/
 ## 🎥 Demo Video
-<video controls src="Demo/Screen Recording 2026-06-20 134222.mp4" title="Pulse"></video>
+<video controls src="Demo/Screen Recording 2026-06-20 134222.mp4" title="Live Gameplay Demo"></video>
 ## Features
 
 **Core game**
